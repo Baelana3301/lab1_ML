@@ -57,6 +57,24 @@ class LogisticsOptimizer:
 
         return ind
 
+    # Вычисление приспособленности (fitness)
+    def calc_fitness(self, ind: np.ndarray):
+        total_cost = np.sum(ind * self.cost_m)
+        # Штраф за превышение транспортных затрат
+        cost_penalty = max(0, total_cost - self.budget) * 1000
+        # Расчет превышения поставок
+        city_supply = np.sum(ind, axis=0)
+        excess = np.sum(np.maximum(0, city_supply - self.demand))
+        # Штраф за неудовлетворенный спрос
+        unsatisfied_demand = np.sum(np.maximum(0, self.demand - city_supply)) * 1000
+        # Штраф за превышение производства
+        prod_used = np.sum(ind, axis=1)
+        overprod = np.sum(np.maximum(0, prod_used - self.supply)) * 1000
+        # Фитнес функция, минимизирование превышения и штрафов
+        fitness = 1 / (1 + excess + cost_penalty + unsatisfied_demand + overprod)
+
+        return fitness
+
 def run():
     n_prod = 4
     k_cities = 5
