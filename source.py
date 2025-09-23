@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg') # Указываем бэкенд первым делом
 import matplotlib.pyplot as plt
 import random
 from typing import List, Tuple, Callable
@@ -65,18 +67,18 @@ class LogisticsOptimizer:
         total_cost = np.sum(ind * self.cost_m)
 
         # Штраф за превышение бюджета
-        cost_penalty = max(0, total_cost - self.budget) * 1000
+        cost_penalty = max(0, total_cost - self.budget) * 10
 
         # Расчет превышения поставок
         city_supply = np.sum(ind, axis=0)
         excess = np.sum(np.maximum(0, city_supply - self.demand))
 
         # Штраф за неудовлетворенный спрос
-        unsatisfied_demand = np.sum(np.maximum(0, self.demand - city_supply)) * 1000
+        unsatisfied_demand = np.sum(np.maximum(0, self.demand - city_supply)) * 50
 
         # Штраф за превышение производства
         prod_used = np.sum(ind, axis=1)
-        overprod = np.sum(np.maximum(0, prod_used - self.supply)) * 1000
+        overprod = np.sum(np.maximum(0, prod_used - self.supply)) * 50
 
         # Фитнес функция
         fitness = 1 / (1 + excess + cost_penalty + unsatisfied_demand + overprod)
@@ -299,7 +301,7 @@ def run_exp():
     """Запуск экспериментов с обработкой ошибок"""
     n_prod = 3  # Уменьшили для стабильности
     k_cities = 4
-    budget = 50000
+    budget = 500000
 
     optimizer = LogisticsOptimizer(n_prod, k_cities, budget)
 
