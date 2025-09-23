@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="247361d8-6863-4fe4-b899-c076de55b0ab" name="Changes" comment="0.04&#10;фитнес функция (приспособленность)">
+    <list default="true" id="247361d8-6863-4fe4-b899-c076de55b0ab" name="Changes" comment="0.05&#10;3 вида кроссоверов">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source.py" beforeDir="false" afterPath="$PROJECT_DIR$/source.py" afterDir="false" />
     </list>
@@ -106,7 +106,15 @@
       <option name="project" value="LOCAL" />
       <updated>1758647481093</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="0.05&#10;3 вида кроссоверов">
+      <option name="closed" value="true" />
+      <created>1758649054330</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1758649054330</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -114,6 +122,7 @@
     <MESSAGE value="0.02" />
     <MESSAGE value="0.03&#10;создание индивидов для популяции" />
     <MESSAGE value="0.04&#10;фитнес функция (приспособленность)" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.04&#10;фитнес функция (приспособленность)" />
+    <MESSAGE value="0.05&#10;3 вида кроссоверов" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.05&#10;3 вида кроссоверов" />
   </component>
 </project>

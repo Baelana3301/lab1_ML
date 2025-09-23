@@ -125,7 +125,58 @@ class LogisticsOptimizer:
 
         return child1, child2
 
+    # Случайная мутация
+    def random_mutation(self, ind: np.ndarray, mutation_rate: float = 0.1) -> np.ndarray:
+        mutated = ind.copy()
+        rows, cols = ind.shape
 
+        for i in range(rows):
+            for j in range(cols):
+                if random.random() < mutation_rate:
+                    # Случайное изменение в пределах ограничений
+                    max_change = min(self.supply[i], self.demand[j])
+                    mutated[i][j] = random.randint(0, max_change)
+
+        return mutated
+
+    # Мутация обменом
+    def swap_mutation(self, ind: np.ndarray, mutation_rate: float = 0.1) -> np.ndarray:
+        mutated = ind.copy()
+        rows, cols = ind.shape
+
+        if random.random() < mutation_rate:
+            # Выбираем две случайные позиции для обмена
+            i1, j1 = random.randint(0, rows - 1), random.randint(0, cols - 1)
+            i2, j2 = random.randint(0, rows - 1), random.randint(0, cols - 1)
+
+            # Обмен значениями
+            mutated[i1][j1], mutated[i2][j2] = mutated[i2][j2], mutated[i1][j1]
+
+        return mutated
+
+    # Адаптивная мутация (более интенсивное изменение худших генов)
+    def adaptive_mutation(self, ind: np.ndarray, mutation_rate: float = 0.1) -> np.ndarray:
+        mutated = ind.copy()
+        rows, cols = ind.shape
+        # Вычисляем "полезность" каждого маршрута
+        route_efficiency = ind / (self.cost_m + 1e-10)
+
+        for i in range(rows):
+            for j in range(cols):
+                # Увеличиваем вероятность мутации для неэффективных маршрутов
+                current_efficiency = route_efficiency[i][j]
+                max_efficiency = np.max(route_efficiency)
+
+                adaptive_rate = mutation_rate * (1 - current_efficiency / (max_efficiency + 1e-10))
+
+                if random.random() < adaptive_rate:
+                    max_possible = min(self.supply[i] - np.sum(mutated[i]) + mutated[i][j],
+                                       self.demand[j] - np.sum(mutated[:, j]) + mutated[i][j])
+                    max_possible = max(0, max_possible)
+                    if max_possible > 0:
+                        mutated[i][j] = random.randint(0, max_possible)
+
+        return mutated
 
 def run():
     n_prod = 4
