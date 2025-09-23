@@ -178,10 +178,234 @@ class LogisticsOptimizer:
 
         return mutated
 
+    # Турнирная селекция
+    def tournament_selection(self, population: List[np.ndarray], fitnesses: List[float], tournament_size: int = 3) -> np.ndarray:
+        selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+        selected.sort(key=lambda x: x[1], reverse=True)
+        return selected[0][0].copy()
+
+    # Основной генетический алгоритм
+    def gen_alg(self, pop_size: int = 100, generations: int = 500, crossover_func: Callable = None, mutation_func: Callable = None, crossover_rate: float = 0.8, mutation_rate: float = 0.1) -> dict:
+        # Создание популяции
+        population = [self.create_ind() for _ in range(pop_size)]
+        best_fitness = []
+        avg_fitness = []
+
+        for generation in range(generations):
+            # Вычисление приспособленности, фитнес функции
+            fitnesses = [self.calc_fitness(indiv) for indiv in population]
+
+            # Статистика
+            best_fitness.append(max(fitnesses))
+            avg_fitness.append(np.mean(fitnesses))
+
+            # Новая популяция
+            new_population = []
+
+            # Элитизм: сохраняем лучшую особь
+            best_index = np.argmax(fitnesses)
+            new_population.append(population[best_index].copy())
+
+            while len(new_population) < pop_size:
+                # Селекция
+                parent1 = self.tournament_selection(population, fitnesses)
+                parent2 = self.tournament_selection(population, fitnesses)
+
+                # Скрещивание
+                if random.random() < crossover_rate:
+                    child1, child2 = crossover_func(parent1, parent2)
+                else:
+                    child1, child2 = parent1.copy(), parent2.copy()
+
+                # Мутация
+                child1 = mutation_func(child1, mutation_rate)
+                child2 = mutation_func(child2, mutation_rate)
+
+                new_population.extend([child1, child2])
+
+            # Обновление популяции
+            population = new_population[:pop_size]
+
+            if generation % 50 == 0:
+                print(f"Поколение {generation}: Лучшая приспособленность = {best_fitness[-1]:.6f}")
+
+        # Лучшее решение
+        best_index = np.argmax([self.calc_fitness(indiv) for indiv in population])
+        best_solution = population[best_index]
+
+        return {
+            'solution': best_solution,
+            'best_fitness': best_fitness,
+            'avg_fitness': avg_fitness,
+            'total_cost': np.sum(best_solution * self.cost_m),
+            'total_excess': np.sum(np.maximum(0, np.sum(best_solution, axis=0) - self.demand))
+        }
+
+    # Полный перебор, для очень мелких задач
+    def brute_force(self) -> dict:
+        if self.n_prod * self.k_cities > 8:  # Ограничение для производительности
+            return {'solution': None, 'time': -1, 'error': 'Слишком большая задача для полного перебора'}
+
+        print("Запуск полного перебора...")
+        start_time = time.time()
+
+        # Генерация всех возможных решений
+        best_solution = None
+        best_fitness = -float('inf')
+
+        # Простой перебор (упрощенная версия)
+        max_value = max(np.max(self.supply), np.max(self.demand))
+        search_space = max_value ** (self.n_prod * self.k_cities)
+
+        # Ограничиваем пространство поиска для демонстрации
+        max_iterations = 10000
+        iterations = 0
+
+        while iterations < max_iterations:
+            individual = self.create_ind()
+            fitness = self.calc_fitness(individual)
+
+            if fitness > best_fitness:
+                best_fitness = fitness
+                best_solution = individual.copy()
+
+            iterations += 1
+
+        return {
+            'solution': best_solution,
+            'time': time.time() - start_time,
+            'fitness': best_fitness
+        }
+
 def run():
     n_prod = 4
     k_cities = 5
     budget = 50000
+
+    optimizer = LogisticsOptimizer(n_prod, k_cities, budget)
+
+    # Методы скрещивания и мутации
+    crossover_methods = {
+        'Одноточечное': optimizer.single_point_crossover,
+        'Двухточечное': optimizer.two_point_crossover,
+        'Равномерное': optimizer.uniform_crossover
+    }
+    mutation_methods = {
+        'Случайная': optimizer.random_mutation,
+        'Обмен': optimizer.swap_mutation,
+        'Адаптивная': optimizer.adaptive_mutation
+    }
+
+    # Результаты
+    results = {}
+
+    # Эксперименты с разными комбинациями
+    for crossover_name, crossover_func in crossover_methods.items():
+        for mutation_name, mutation_func in mutation_methods.items():
+            print(f"\n--- Эксперимент: {crossover_name} скрещивание + {mutation_name} мутация ---")
+
+            key = f"{crossover_name} + {mutation_name}"
+            results[key] = optimizer.gen_alg(
+                pop_size=50,
+                generations=200,
+                crossover_func=crossover_func,
+                mutation_func=mutation_func
+            )
+
+    # Полный перебор для сравнения
+    brute_result = optimizer.brute_force()
+
+    # Визуализация результатов
+    plot_results(results, brute_result)
+
+# Визуализация результатов
+def plot_results(results: dict, brute_result: dict):
+    # График сходимости для каждого метода
+    plt.figure(figsize=(15, 10))
+
+    # График 1: Сравнение лучшей приспособленности
+    plt.subplot(2, 2, 1)
+    for method, result in results.items():
+        plt.plot(result['best_fitness'], label=method, linewidth=2)
+
+    if brute_result.get('fitness'):
+        plt.axhline(y=brute_result['fitness'], color='r', linestyle='--',
+                    label=f'Полный перебор: {brute_result["fitness"]:.6f}')
+
+    plt.title('Сравнение методов: Лучшая приспособленность')
+    plt.xlabel('Поколение')
+    plt.ylabel('Приспособленность')
+    plt.legend()
+    plt.grid(True)
+
+    # График 2: Сравнение средней приспособленности
+    plt.subplot(2, 2, 2)
+    for method, result in results.items():
+        plt.plot(result['avg_fitness'], label=method, linewidth=2)
+
+    plt.title('Сравнение методов: Средняя приспособленность')
+    plt.xlabel('Поколение')
+    plt.ylabel('Средняя приспособленность')
+    plt.legend()
+    plt.grid(True)
+
+    # График 3: Сравнение превышения поставок
+    plt.subplot(2, 2, 3)
+    methods = list(results.keys())
+    excess_values = [results[method]['total_excess'] for method in methods]
+    cost_values = [results[method]['total_cost'] for method in methods]
+
+    x = np.arange(len(methods))
+    width = 0.35
+
+    plt.bar(x - width / 2, excess_values, width, label='Превышение поставок')
+    plt.bar(x + width / 2, cost_values, width, label='Общая стоимость')
+
+    plt.title('Сравнение результатов решений')
+    plt.xlabel('Метод')
+    plt.ylabel('Значение')
+    plt.xticks(x, methods, rotation=45)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+
+    # График 4: Сравнение времени сходимости
+    plt.subplot(2, 2, 4)
+    convergence_times = []
+    for method, result in results.items():
+        # Время достижения 95% от максимальной приспособленности
+        target_fitness = max(result['best_fitness']) * 0.95
+        for i, fitness in enumerate(result['best_fitness']):
+            if fitness >= target_fitness:
+                convergence_times.append(i)
+                break
+        else:
+            convergence_times.append(len(result['best_fitness']))
+
+    plt.bar(methods, convergence_times, color='lightcoral')
+    plt.title('Скорость сходимости методов')
+    plt.xlabel('Метод')
+    plt.ylabel('Поколение до сходимости')
+    plt.xticks(rotation=45)
+    plt.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+    # Вывод численных результатов
+    print("\n" + "=" * 60)
+    print("РЕЗУЛЬТАТЫ ЭКСПЕРИМЕНТОВ")
+    print("=" * 60)
+
+    for method, result in results.items():
+        print(f"\n{method}:")
+        print(f"  Приспособленность: {max(result['best_fitness']):.6f}")
+        print(f"  Общая стоимость: {result['total_cost']:.2f}")
+        print(f"  Превышение поставок: {result['total_excess']:.2f}")
+
+    if brute_result.get('fitness'):
+        print(f"\nПолный перебор:")
+        print(f"  Приспособленность: {brute_result['fitness']:.6f}")
+        print(f"  Время выполнения: {brute_result['time']:.2f} сек")
 
 if __name__ == "__main__":
     run()
