@@ -75,6 +75,58 @@ class LogisticsOptimizer:
 
         return fitness
 
+    # Одноточечное скрещивание
+    def single_point_crossover(self, parent1: np.ndarray, parent2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        rows, cols = parent1.shape
+        crossover_point = random.randint(1, rows * cols - 1)
+
+        child1 = parent1.flatten().copy()
+        child2 = parent2.flatten().copy()
+
+        # Обмен генами после точки скрещивания
+        temp = child1[crossover_point:].copy()
+        child1[crossover_point:] = child2[crossover_point:].copy()
+        child2[crossover_point:] = temp
+
+        return child1.reshape((rows, cols)), child2.reshape((rows, cols))
+
+    # Двухточечное скрещивание
+    def two_point_crossover(self, parent1: np.ndarray, parent2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        rows, cols = parent1.shape
+        size = rows * cols
+
+        point1 = random.randint(1, size - 2)
+        point2 = random.randint(point1 + 1, size - 1)
+
+        child1 = parent1.flatten().copy()
+        child2 = parent2.flatten().copy()
+
+        # Обмен генами между двумя точками
+        temp = child1[point1:point2].copy()
+        child1[point1:point2] = child2[point1:point2]
+        child2[point1:point2] = temp
+
+        return child1.reshape((rows, cols)), child2.reshape((rows, cols))
+
+    # Равномерное скрещивание
+    def uniform_crossover(self, parent1: np.ndarray, parent2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        rows, cols = parent1.shape
+        child1 = np.zeros_like(parent1)
+        child2 = np.zeros_like(parent2)
+
+        for i in range(rows):
+            for j in range(cols):
+                if random.random() < 0.5:
+                    child1[i][j] = parent1[i][j]
+                    child2[i][j] = parent2[i][j]
+                else:
+                    child1[i][j] = parent2[i][j]
+                    child2[i][j] = parent1[i][j]
+
+        return child1, child2
+
+
+
 def run():
     n_prod = 4
     k_cities = 5
