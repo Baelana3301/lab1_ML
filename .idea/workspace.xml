@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="247361d8-6863-4fe4-b899-c076de55b0ab" name="Changes" comment="1.11 changes..." />
+    <list default="true" id="247361d8-6863-4fe4-b899-c076de55b0ab" name="Changes" comment="1.12 changes...">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -145,7 +147,15 @@
       <option name="project" value="LOCAL" />
       <updated>1758653683089</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="1.12 changes...">
+      <option name="closed" value="true" />
+      <created>1758653806280</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1758653806280</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -158,6 +168,7 @@
     <MESSAGE value="1.0&#10;полная программа" />
     <MESSAGE value="1.1 changes..." />
     <MESSAGE value="1.11 changes..." />
-    <option name="LAST_COMMIT_MESSAGE" value="1.11 changes..." />
+    <MESSAGE value="1.12 changes..." />
+    <option name="LAST_COMMIT_MESSAGE" value="1.12 changes..." />
   </component>
 </project>
